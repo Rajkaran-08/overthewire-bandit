@@ -1,4 +1,4 @@
-# Level 2 🡒 3: Handling Files with Spaces
+# Level 3 🡒 4: Handling Files with Spaces
 
 ## 🎯 Level Goal / Objective
 The password for the next level is stored in a file called **spaces in this filename** located in the home directory. The challenge here is dealing with spaces in filenames, which require special handling in the command line.

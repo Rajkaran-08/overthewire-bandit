@@ -1,4 +1,4 @@
-# Level 3 🡒 4: Finding Hidden Files
+# Level 4 🡒 5: Finding Hidden Files
 
 ## 🎯 Level Goal / Objective
 The password for the next level is stored in a hidden file in the **inhere** directory. In Linux, hidden files start with a dot (`.`) and are not displayed by default with the regular `ls` command.

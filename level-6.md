@@ -1,4 +1,4 @@
-# Level 4 🡒 5: Finding Human-Readable Files
+# Level 5 🡒 6: Finding Human-Readable Files
 
 ## 🎯 Level Goal / Objective
 The password for the next level is stored in the only human-readable file in the **inhere** directory. Tip: if your terminal is messed up, try the "reset" command.
