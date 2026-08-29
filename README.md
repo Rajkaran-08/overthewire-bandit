@@ -32,3 +32,8 @@ The Bandit wargame is designed to teach the basics of Linux, shell commands, and
 - [Level 4 🡒 5](level-5.md)
 - [Level 5 🡒 6](level-6.md)
 - [Level 6 🡒 7](level-7.md)
+- [Level 7 🡒 8](level-8.md)
+- [Level 8 🡒 9](level-9.md)
+- [Level 9 🡒 10](level-10.md)
+- [Level 10 🡒 11](level-11.md)
+- [Level 11 🡒 12](level-12.md)
