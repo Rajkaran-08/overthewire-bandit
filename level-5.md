@@ -1,14 +1,15 @@
 # Level 4 🡒 5: Finding Hidden Files
 
 ## 🎯 Level Goal / Objective
-The password for the next level is stored in a hidden file in the **inhere** directory. In Linux, hidden files start with a dot (`.`) and are not displayed by default with the regular `ls` command.
+The password for the next level is stored in the only human-readable file in the **inhere** directory. Tip: if your terminal is messed up, try the "reset" command.
 
 ## 🛠️ Commands You May Need
 - `ls` - List directory contents
-- `ls -a` - List all files including hidden ones
-- `ls -la` - List all files with detailed information
 - `cd` - Change directory
 - `cat` - Display file contents
+- `file` - Determine file type
+- `du` - Display directory usage
+- `find` - Search for files
 
 ## 📝 Steps Taken
 
@@ -16,107 +17,100 @@ The password for the next level is stored in a hidden file in the **inhere** dir
    ```bash
    ls -la
    cd inhere
-   pwd
+   ls -la
    ```
 
-2. **List files in the directory (won't show hidden files):**
+2. **Check what files are in the directory:**
    ```bash
    ls
-   # This shows no files or very few files
+   # You'll see multiple files named -file00, -file01, -file02, etc.
    ```
 
-3. **List all files including hidden ones:**
+3. **Determine file types using the file command:**
    ```bash
-   ls -a
-   # Now we can see the hidden file(s)
+   file ./-file*
+   # This gives file types of all files in the directory
    ```
 
-4. **Getting detailed information about all files:**
+4. **Alternative approach (from original notes):**
    ```bash
-   ls -la
-   # Shows permissions, ownership, size, and timestamps
+   file ./-f*
+   # All files are named -file0* so we use this pattern
    ```
 
-5. **Reading the hidden file:**
+5. **Identify the ASCII text file and read it:**
    ```bash
-   cat .hidden
-   # Or whatever the hidden file is named
+   # Look for the file that shows "ASCII text" in the output
+   cat ./-file07
+   # (or whatever file number is the ASCII text file)
    ```
 
-6. **Use the password to connect to bandit4:**
+6. **Use the password to connect to bandit5:**
    ```bash
    exit
-   ssh bandit4@bandit.labs.overthewire.org -p 2220
+   ssh bandit5@bandit.labs.overthewire.org -p 2220
    ```
 
 ## 💡 Explanation
 
 ### Key Concepts Learned:
-- **Hidden files in Linux**: Files starting with `.` are hidden by default
-- **ls command flags**: Different options reveal different levels of information
-- **Directory navigation**: Using `cd` to change directories
-- **File visibility**: Understanding what's visible vs hidden in Linux filesystems
+- **File type identification**: Using the `file` command to determine file contents
+- **Human-readable vs binary files**: Understanding different file formats
+- **Wildcard patterns**: Using `*` to match multiple files
+- **ASCII text files**: Recognizing human-readable text format
 
 ### Why This Solution Works:
-By default, the `ls` command doesn't show files that begin with a dot (`.`). These are considered "hidden" files in Unix-like systems. As mentioned in the original notes: "The password is in a hidden file, just use "-a" flag with "ls"". The `-a` flag (all) tells `ls` to show ALL files, including the hidden ones.
+As noted in the original documentation: "The directory includes a couple of key files, data files and ASCII text file. ASCII text file is the file that you need. Get the file types using 'file' command." The `file` command analyzes the content and structure of files to determine their type, helping us identify which file contains readable text.
 
 ### The Problem Explained:
-- Linux treats files beginning with `.` as hidden
-- `ls` by default doesn't display hidden files
-- `ls -a` shows all files including hidden ones (`.` and `..` directories plus any hidden files)
-- `ls -la` combines `-l` (long format) and `-a` (all files) for detailed information
+- Multiple files exist with similar names (-file00, -file01, etc.)
+- Only one contains human-readable text (ASCII)
+- Others contain binary data, executables, or other non-readable formats
+- The `file` command reveals which file type each one is
 
-### Common ls Flag Combinations:
+### File Command Output Examples:
 ```bash
-# Basic listing
-ls
-
-# Show all files (including hidden)
-ls -a
-
-# Long format (detailed info)
-ls -l
-
-# Long format + all files
-ls -la
-
-# Human readable file sizes
-ls -lah
-
-# Sort by modification time
-ls -lat
+./inhere/-file00: data
+./inhere/-file01: ELF 32-bit LSB executable
+./inhere/-file02: data  
+./inhere/-file03: data
+./inhere/-file04: data
+./inhere/-file05: data
+./inhere/-file06: data
+./inhere/-file07: ASCII text
+./inhere/-file08: data
+./inhere/-file09: data
 ```
 
-### Understanding Hidden Files:
-- `.` represents the current directory
-- `..` represents the parent directory  
-- `.filename` is a hidden file named "filename"
-- `.foldername/` is a hidden directory
-- Hidden files are commonly used for configuration files (like `.bashrc`, `.profile`)
+### Why We Need the ./ Prefix:
+The files are cleverly named starting with a dash (-file00, -file01, etc.), which creates a problem. If we try to use `file -file*`, the command interprets the `-f` as a command flag and gives an error. By using `file ./-file*`, we explicitly tell the command that we're referring to files in the current directory, not command options.
 
 ### Alternative Approaches:
 ```bash
-# Using wildcards to show hidden files
-ls .*
+# Check individual files
+file ./-file00
+file ./-file01
+# ... and so on
 
-# Using find command to locate hidden files
-find . -name ".*" -type f
+# Use find with file command
+find . -name "-file*" -exec file {} \;
 
-# List everything recursively
-ls -laR
+# Check all files and grep for ASCII
+file ./-file* | grep "ASCII"
 
-# Show only hidden files (excluding . and ..)
-ls -la | grep "^\."
+# Loop through all files
+for f in ./-file*; do echo "$f: $(file "$f")"; done
 ```
 
-### Why Files Are Hidden:
-- **Configuration files**: Many programs store settings in hidden files
-- **System files**: Important files that users don't normally need to see
-- **Reducing clutter**: Keeps directories looking clean for everyday use
-- **Convention**: Unix tradition of hiding "dot files"
+### Understanding File Types:
+- **ASCII text**: Human-readable text file (what we want)
+- **data**: Binary data, not human-readable
+- **ELF executable**: Linux executable binary
+- **UTF-8 text**: Another form of human-readable text
+- **Empty**: File with no content
 
 ### Pro Tip:
-The `-a` flag is essential when you suspect there might be hidden files. Many important system configuration files are hidden, and this convention helps keep directories uncluttered while preserving important files. Always remember to check for hidden files when exploring directories!
+The `file` command is incredibly useful for identifying file contents when you can't rely on file extensions. It examines the actual file content and magic numbers to determine the true file type, regardless of the filename.
 
 ---
 **Next:** [Level 5 🡒 6](Level-6.md)

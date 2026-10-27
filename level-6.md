@@ -1,116 +1,72 @@
-# Level 5 🡒 6: Finding Human-Readable Files
+# Level 5 🡒 6: Finding a File by Size and Permissions
 
 ## 🎯 Level Goal / Objective
-The password for the next level is stored in the only human-readable file in the **inhere** directory. Tip: if your terminal is messed up, try the "reset" command.
+The password for the next level is stored in a file somewhere under the **inhere** directory and has all of the following properties:
+- human-readable
+- 1033 bytes in size
+- not executable
 
 ## 🛠️ Commands You May Need
 - `ls` - List directory contents
 - `cd` - Change directory
 - `cat` - Display file contents
 - `file` - Determine file type
-- `du` - Display directory usage
-- `find` - Search for files
+- `du` - Display disk usage of files and directories
+- `find` - Search for files using flexible criteria
 
 ## 📝 Steps Taken
 
 1. **Initial exploration:**
    ```bash
-   ls -la
-   cd inhere
-   ls -la
-   ```
-
-2. **Check what files are in the directory:**
-   ```bash
    ls
-   # You'll see multiple files named -file00, -file01, -file02, etc.
+   find
    ```
+   `inhere` holds 20 subdirectories (`maybehere00` to `maybehere19`), each with 9 similarly named files (some hidden, some with spaces or a leading dash). Checking them by hand isn't practical.
 
-3. **Determine file types using the file command:**
+2. **Checking what `find` can test for:**
    ```bash
-   file ./-file*
-   # This gives file types of all files in the directory
+   find --help
    ```
+   The help output lists the tests available, including ones for size, executable and readable status.
 
-4. **Alternative approach (from original notes):**
-   ```bash
-   file ./-f*
-   # All files are named -file0* so we use this pattern
-   ```
+3. **Building the `find` command from its pieces:**
+   - **Path:** where to search (`.` is the current directory). The path must come before any test.
+   - **`-size 1033c`**: exactly 1033 bytes (`c` means bytes)
+   - **`! -executable`**: `!` negates the test that follows, so this keeps only files that are not executable
+   - **`-readable`**: keeps only files the current user can read
 
-5. **Identify the ASCII text file and read it:**
-   ```bash
-   # Look for the file that shows "ASCII text" in the output
-   cat ./-file07
-   # (or whatever file number is the ASCII text file)
-   ```
-
-6. **Use the password to connect to bandit5:**
-   ```bash
-   exit
-   ssh bandit5@bandit.labs.overthewire.org -p 2220
-   ```
+4. **Reading the result:**
+   - Run the `find` command on its own and note the path it prints, then `cat` that file
+   - Or send its output into `xargs cat`, which passes each path to `cat` as an argument
 
 ## 💡 Explanation
 
 ### Key Concepts Learned:
-- **File type identification**: Using the `file` command to determine file contents
-- **Human-readable vs binary files**: Understanding different file formats
-- **Wildcard patterns**: Using `*` to match multiple files
-- **ASCII text files**: Recognizing human-readable text format
+- **`find` tests are combined with AND**: listing several tests together means a file must satisfy all of them
+- **Path before expression**: `find` expects paths first, then tests. Putting a path after a test gives a "paths must precede expression" error
+- **Negation with `!`**: flips the test that follows it, handy for "not executable"
+- **`xargs`**: turns lines from stdin into arguments for another command, which is what `cat` needs here (piping paths straight into `cat` only prints the paths back)
 
 ### Why This Solution Works:
-As noted in the original documentation: "The directory includes a couple of key files, data files and ASCII text file. ASCII text file is the file that you need. Get the file types using 'file' command." The `file` command analyzes the content and structure of files to determine their type, helping us identify which file contains readable text.
+Size alone narrows 180 files down a lot, and excluding executables removes the rest of the lookalikes. `find` checks every file under the path against all the tests at once, so only one file survives and no manual inspection is needed.
 
-### The Problem Explained:
-- Multiple files exist with similar names (-file00, -file01, etc.)
-- Only one contains human-readable text (ASCII)
-- Others contain binary data, executables, or other non-readable formats
-- The `file` command reveals which file type each one is
+### Reference:
 
-### File Command Output Examples:
-```bash
-./inhere/-file00: data
-./inhere/-file01: ELF 32-bit LSB executable
-./inhere/-file02: data  
-./inhere/-file03: data
-./inhere/-file04: data
-./inhere/-file05: data
-./inhere/-file06: data
-./inhere/-file07: ASCII text
-./inhere/-file08: data
-./inhere/-file09: data
-```
-
-### Why We Need the ./ Prefix:
-The files are cleverly named starting with a dash (-file00, -file01, etc.), which creates a problem. If we try to use `file -file*`, the command interprets the `-f` as a command flag and gives an error. By using `file ./-file*`, we explicitly tell the command that we're referring to files in the current directory, not command options.
+| Option | What it does |
+|---|---|
+| `-size Nc` | matches files of exactly N bytes (`+N`/`-N` for more/less than) |
+| `-executable` | matches files the current user can execute |
+| `-readable` | matches files the current user can read |
+| `!` / `-not` | negates the next test |
+| `-type f` | matches regular files only |
 
 ### Alternative Approaches:
-```bash
-# Check individual files
-file ./-file00
-file ./-file01
-# ... and so on
-
-# Use find with file command
-find . -name "-file*" -exec file {} \;
-
-# Check all files and grep for ASCII
-file ./-file* | grep "ASCII"
-
-# Loop through all files
-for f in ./-file*; do echo "$f: $(file "$f")"; done
-```
-
-### Understanding File Types:
-- **ASCII text**: Human-readable text file (what we want)
-- **data**: Binary data, not human-readable
-- **ELF executable**: Linux executable binary
-- **UTF-8 text**: Another form of human-readable text
-- **Empty**: File with no content
+- `find` with `-exec cat {} \;` runs `cat` on each match directly
+- Wrap the `find` in `cat $( ... )` using command substitution (curly braces `{ }` will not work for this)
+- Run `file` on the candidates afterwards to confirm the match really is ASCII text
 
 ### Pro Tip:
-The `file` command is incredibly useful for identifying file contents when you can't rely on file extensions. It examines the actual file content and magic numbers to determine the true file type, regardless of the filename.
+`-readable` checks permissions, not whether the content is human-readable. Here size plus "not executable" was enough to isolate one file, but when a search returns several candidates, use `file` to check the actual content type.
 
 ---
-**Next:** [Level 6 🡒 7](Level-7.md)
+**Next:** [Level 6 🡒 7](level-7.md)
